@@ -90,8 +90,10 @@ int main(void){
         }
 
         activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
-        if ((activity < 0) && (errno!=EINTR))
+        if ((activity < 0) && (errno!=EINTR)){
             std::cerr << "ERR: " << errno << ". " << "select is failed.";
+            exit(EXIT_FAILURE);
+        }
 
         if (FD_ISSET(server_fd, &readfds))  
         {  
