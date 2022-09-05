@@ -9,6 +9,8 @@ g++ server.cpp -o server & g++ client.cpp -lpthread -o client
 ./server
 ./client
 ```
+**Type exit to terminate the client.**
+
 **If you have a "Binding is failed." error, try to run**
 ```bash
 kill $(lsof -t -i:8080)
