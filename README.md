@@ -4,6 +4,7 @@
 g++ server.cpp -o server & g++ client.cpp -lpthread -o client
 ``` 
 ## run:
+**You can run up to 3 clients at a time. If you want to increase the max client, you should alter the macro "MAX_CLIENT".**
 ```bash
 ./server
 ./client
