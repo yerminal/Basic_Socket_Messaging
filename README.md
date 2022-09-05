@@ -4,3 +4,6 @@
 ## run:
 - ./server
 - ./client
+
+If you have a "Binding is failed." error, try to run
+- kill $(lsof -t -i:8080)
