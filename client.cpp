@@ -25,7 +25,7 @@ void receive_message(bool *exit_system, int *client_fd, std::vector<char> *recei
 void copy_string_to_vector(std::string &input, std::vector<char> &target);
 void reset_char_vector(std::vector<char> &v);
 std::string copy_vector_to_string(std::vector<char> &v);
-void remove_zeros_string(std::string& str);
+void remove_zeros_string(std::string &str);
 
 int main(void)
 {
@@ -183,6 +183,7 @@ std::string copy_vector_to_string(std::vector<char> &v)
     return oss.str();
 }
 
-void remove_zeros_string(std::string& str){
+void remove_zeros_string(std::string &str)
+{
     str.erase(std::remove(str.begin(), str.end(), '\0'), str.end());
 }
