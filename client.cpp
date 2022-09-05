@@ -32,8 +32,6 @@ int main(void){
     int len_client_address = sizeof(struct sockaddr_in), 
         len_server_address = sizeof(struct sockaddr_in);
 
-    int sizeof_received = 0, sizeof_sent = 0, count = 0;
-
     std::vector<char> receive_buffer(SIZE_BUFFER, 0);
     std::vector<char> send_buffer(SIZE_BUFFER, 0);
 
@@ -66,7 +64,7 @@ int main(void){
     std::cout << "Connected to the server.\n";
 
     while(1){
-        if((sizeof_received = recv(client_fd, &receive_buffer[0], receive_buffer.size(), 0)) < 0){
+        if(recv(client_fd, &receive_buffer[0], receive_buffer.size(), 0) < 0){
             if(errno != 11){
                 std::cerr << "ERR: " << errno << ". " << "recv is failed.";
                 exit(EXIT_FAILURE);
@@ -120,9 +118,8 @@ void send_message(bool* exit_system, int* client_fd, std::vector<char>* send_buf
 }
 
 void receive_message(bool* exit_system, int* client_fd, std::vector<char>* receive_buffer){
-    int size_received = 0;
     while(!(*exit_system)){
-        if((size_received = recv(*client_fd, &(*receive_buffer)[0], (*receive_buffer).size(), 0)) < 0){
+        if(recv(*client_fd, &(*receive_buffer)[0], (*receive_buffer).size(), 0) < 0){
             if(errno != 11){
                 std::cerr << "ERR: " << errno << ". " << "recv is failed.";
                 exit(EXIT_FAILURE);
