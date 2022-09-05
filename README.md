@@ -1,9 +1,14 @@
 # Basic_Socket_Messaging
 ## compile:
-- g++ server.cpp -o server & g++ client.cpp -o client
+```bash
+g++ server.cpp -o server & g++ client.cpp -o client
+``` 
 ## run:
-- ./server
-- ./client
-
+```bash
+./server
+./client
+```
 If you have a "Binding is failed." error, try to run
-- kill $(lsof -t -i:8080)
+```bash
+kill $(lsof -t -i:8080)
+```
