@@ -12,12 +12,11 @@
 #include <sys/time.h>
 #include <sys/types.h>
 #include <sys/select.h>
-
-// #include <chrono>
-// #include <thread>
+#include <sstream>
+#include <iterator>
 
 #define SERVER_PORT 8080
-#define MAX_CLIENTS 3
+#define MAX_CLIENT 3
 #define SIZE_BUFFER 256
 
 
@@ -27,23 +26,19 @@ void reset_char_vector(std::vector<char>& v){
 
 int main(void){
 
-    int server_fd, comm_fd, opt = 1, client_socket[MAX_CLIENTS] = {0};
+    int server_fd, comm_fd, opt = 1, client_socket[MAX_CLIENT] = {0};
     int select_fd, max_sd, activity;
     struct sockaddr_in server_address, client_address;
     
     int len_server_address = sizeof(struct sockaddr_in), 
         len_client_address = sizeof(struct sockaddr_in);
 
-    int sizeof_received = 0, sizeof_sent = 0;
-
     std::vector<char> receive_buffer(SIZE_BUFFER, 0);
     std::vector<char> send_buffer(SIZE_BUFFER, 0);
+    std::string username, message;
+    std::ostringstream oss;
 
-    //set of socket descriptors 
     fd_set readfds;
-
-    // char receive_buffer[SIZE_RECEIVE_BUFFER] = {0};
-    // char send_buffer[SIZE_SEND_BUFFER] = {0};
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
@@ -66,7 +61,7 @@ int main(void){
         exit(EXIT_FAILURE);
     }
 
-    if(listen(server_fd, MAX_CLIENTS) < 0){
+    if(listen(server_fd, MAX_CLIENT) < 0){
         std::cerr << "ERR: " << errno << ". " << "Listening is failed.";
         exit(EXIT_FAILURE);
     }
@@ -78,7 +73,7 @@ int main(void){
         FD_SET(server_fd, &readfds);
         max_sd = server_fd;
 
-        for (int i = 0; i < MAX_CLIENTS; i++)  
+        for (int i = 0; i < MAX_CLIENT; i++)  
         {  
             select_fd = client_socket[i];
 
@@ -90,7 +85,7 @@ int main(void){
         }
 
         activity = select(max_sd + 1, &readfds, NULL, NULL, NULL);
-        if ((activity < 0) && (errno!=EINTR)){
+        if (activity < 0 && errno!=EINTR){
             std::cerr << "ERR: " << errno << ". " << "select is failed.";
             exit(EXIT_FAILURE);
         }
@@ -104,20 +99,24 @@ int main(void){
                 exit(EXIT_FAILURE);
             }
             
-            std::cout << "___New Connection___\n";
+            std::cout << "\n___New Connection___\n";
             std::cout << "socket_fd: " << comm_fd << ", ";
             std::cout << "IP: " << inet_ntoa(client_address.sin_addr) << ", ";
-            std::cout << "Port: " << ntohs(client_address.sin_port) << "\n";
-           
-            // //send new connection greeting message 
-            // if( send(new_socket, message, strlen(message), 0) != strlen(message) )  
-            // {  
-            //     perror("send");  
-            // }  
-                 
-            // puts("Welcome message sent successfully");  
+            std::cout << "Port: " << ntohs(client_address.sin_port) << "\n\n";
 
-            for(int i = 0; i < MAX_CLIENTS; i++)  
+            reset_char_vector(send_buffer);
+            username = "socket_" + std::to_string(comm_fd);
+            std::copy(username.begin(), username.end(), send_buffer.begin());
+
+            std::cout << "Username: " << username << "\n";
+
+            if(send(comm_fd, &send_buffer[0], send_buffer.size(), 0) < 0){
+                std::cerr << "ERR: " << errno << ". " << "send is failed.";
+                exit(EXIT_FAILURE);
+            }
+            reset_char_vector(send_buffer);
+
+            for(int i = 0; i < MAX_CLIENT; i++)  
             {  
                 if(client_socket[i] == 0)  
                 {
@@ -128,21 +127,20 @@ int main(void){
             }  
         }
 
-        for (int i = 0; i < MAX_CLIENTS; i++)  
+        for (int i = 0; i < MAX_CLIENT; i++)  
         {  
             select_fd = client_socket[i];  
                  
             if(FD_ISSET(select_fd, &readfds))  
             {
-                if((sizeof_received = recv(select_fd, &receive_buffer[0],
-                    receive_buffer.size(), 0)) == 0)  
+                if(recv(select_fd, &receive_buffer[0], receive_buffer.size(), 0) == 0)  
                 {
                     getpeername(select_fd, (struct sockaddr*)&client_address,
                         (socklen_t*)&len_client_address);
 
-                    std::cout << "___Disconnection___\n";
+                    std::cout << "\n___Disconnection___\n";
                     std::cout << "IP: " << inet_ntoa(client_address.sin_addr) << ", ";
-                    std::cout << "Port: " << ntohs(client_address.sin_port) << "\n";
+                    std::cout << "Port: " << ntohs(client_address.sin_port) << "\n\n";
 
                     close(select_fd);  
                     client_socket[i] = 0;  
@@ -150,59 +148,26 @@ int main(void){
 
                 else 
                 {
-                    std::cout << "The received message: ";
-                    for (int x = 0; x < receive_buffer.size(); x++) {
-                            std::cout << receive_buffer[x];
+                    oss.str("");
+                    std::copy(receive_buffer.begin(), receive_buffer.end(), std::ostream_iterator<char>(oss, ""));
+                    message = "socket_" + std::to_string(select_fd) + ": " + oss.str();
+                    std::copy(message.begin(), message.end(), send_buffer.begin());
+                    std::cout << message << "\n";
+
+                    for (int x = 0; x < MAX_CLIENT; x++){
+                        if(select_fd != client_socket[x] && client_socket[x] != 0){
+                            if(send(client_socket[x], &send_buffer[0], send_buffer.size(), 0) < 0){
+                                std::cerr << "ERR: " << errno << ". " << "send is failed.";
+                                exit(EXIT_FAILURE);
+                            }
+                        }
                     }
-                    std::cout << "\n";
-                    send_buffer = receive_buffer;
-                    for (int x = 0; x < MAX_CLIENTS; x++){
-                        if(select_fd != client_socket[x])
-                            send(client_socket[x], &send_buffer[0], send_buffer.size(), 0);
-                    }
+                    reset_char_vector(receive_buffer);
                     reset_char_vector(send_buffer); 
                 }
             }  
         }
-
-        // std::cout << "Waiting for incoming connections...\n";
-        // reset_char_vector(receive_buffer);
-
-        // comm_fd = accept(server_fd, (struct sockaddr*)&client_address, 
-        //     (socklen_t*)&len_client_address);
-        
-        // if(comm_fd < 0){
-        //     std::cerr << "ERR: " << errno << ". " << "Accepting the client is failed.";
-        //     exit(EXIT_FAILURE);
-        // }
-
-        // if(!std::all_of(send_buffer.begin(), send_buffer.end(), [](int i) {return i==0;})){
-        //     sizeof_sent = send(comm_fd, &send_buffer[0], send_buffer.size(), 0);
-        //     if(sizeof_sent < 0){
-        //         std::cerr << "ERR: " << errno << ". " << "send is failed.";
-        //         exit(EXIT_FAILURE);
-        //     }
-        // }
-
-        // reset_char_vector(receive_buffer);
-
-        // sizeof_received = recv(comm_fd, &receive_buffer[0], receive_buffer.size(), 0);
-        // if(sizeof_received < 0){
-        //     std::cerr << "ERR: " << errno << ". " << "recv is failed.";
-        //     exit(EXIT_FAILURE);
-        // }
-
-        // std::cout << "The received message: ";
-        // for (int i = 0; i < receive_buffer.size(); i++) {
-        //         std::cout << receive_buffer[i];
-        // }
-        // std::cout << "\n";
-
-        // send_buffer = receive_buffer;
-
-        // close(comm_fd);
     }
-        // std::this_thread::sleep_for(std::chrono::milliseconds(6000));
 
     return 0;
 }
