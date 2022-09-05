@@ -1,6 +1,6 @@
 # Basic_Socket_Messaging
 ## TODO:
-- In client.cpp, Use timeout for recv function or use threading to process recv explicitly.
+- In client.cpp, use timeout for recv function or use threading to process recv separately.
 ## compile:
 ```bash
 g++ server.cpp -o server & g++ client.cpp -o client
