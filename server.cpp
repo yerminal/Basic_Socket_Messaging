@@ -15,7 +15,7 @@
 #include <sstream>
 #include <iterator>
 
-#define SERVER_PORT 8080
+// #define SERVER_PORT 8080
 #define MAX_CLIENT 3
 #define SIZE_BUFFER 256
 
@@ -24,8 +24,17 @@ void copy_string_to_vector(std::string &input, std::vector<char> &target);
 std::string copy_vector_to_string(std::vector<char> &v);
 void remove_zeros_string(std::string &str);
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    if (argc != 2 || argv[1] == "-h" || argv[1] == "--help")
+    {
+        std::cerr << "\nUsage: " << argv[0] << " port\n"
+                  << "If you want the port automatically selected, enter port 0.\n";
+        exit(EXIT_FAILURE);
+    }
+
+    const std::string portstr = argv[1];
+    const int server_port = strtol(portstr.c_str(), NULL, 10);
 
     int server_fd, comm_fd, opt = 1, client_socket[MAX_CLIENT] = {0};
     int select_fd, max_sd, activity;
@@ -42,7 +51,7 @@ int main(void)
 
     server_address.sin_family = AF_INET;
     server_address.sin_addr.s_addr = INADDR_ANY;
-    server_address.sin_port = htons(SERVER_PORT);
+    server_address.sin_port = htons(server_port);
 
     server_fd = socket(AF_INET, SOCK_STREAM, 0);
 
@@ -72,6 +81,19 @@ int main(void)
         std::cerr << "ERR: " << errno << ". "
                   << "Listening is failed.";
         exit(EXIT_FAILURE);
+    }
+
+    struct sockaddr_in sin;
+    socklen_t len = sizeof(sin);
+    if (getsockname(server_fd, (struct sockaddr *)&sin, &len) == -1)
+    {
+        std::cerr << "ERR: " << errno << ". "
+                  << "getsockname is failed.";
+        exit(EXIT_FAILURE);
+    }
+    else
+    {
+        std::cout << "The server's port: " << ntohs(sin.sin_port) << "\n";
     }
 
     std::cout << "Waiting for incoming connections...\n";
