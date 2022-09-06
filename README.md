@@ -26,13 +26,13 @@ g++ server.cpp -o server & g++ client.cpp -lpthread -o client
 ```bash
 ./server 8080
 ```
-Usage: ./server port
+Usage: `./server port`
 
-If you want the port automatically selected, enter port 0.
+If you want the port automatically selected, enter `port` 0.
 
-You can run up to 3 clients at a time. If you want to increase the max client, you should alter the macro "MAX_CLIENT" in server.cpp.
+You can run up to 3 clients at a time. If you want to increase the max client, you should alter the macro `MAX_CLIENT` in server.cpp.
 
-If you have a "Binding is failed." error, try to run**
+If you have `Binding server address is failed.` error, try to run:
 ```bash
 kill $(lsof -t -i:8080)
 ```
@@ -47,6 +47,6 @@ ngrok tcp 8080
 ```bash
 ./client 4.tcp.eu.ngrok.io 12227
 ```
-Usage: ./client hostname port
+Usage: `./client hostname port`
 
-Type "exit" to terminate the client.
+Type `exit` to terminate the client.
