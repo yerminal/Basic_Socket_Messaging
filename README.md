@@ -5,6 +5,8 @@ If you have these packages, skip to the compile step.
 ```bash
 sudo apt update
 sudo apt install build-essential
+```
+```bash
 g++ --version
 ```
 - Install ngrok. (for more details, https://ngrok.com/docs/getting-started).
