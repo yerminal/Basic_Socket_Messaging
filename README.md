@@ -1,4 +1,21 @@
 # Basic_Socket_Messaging with ngrok
+## prerequisites
+If you have these packages, skip to the compile step.
+- Install gcc/g++.
+```bash
+sudo apt update
+sudo apt install build-essential
+g++ --version
+```
+- Install ngrok. (for more details, https://ngrok.com/docs/getting-started).
+### 
+```bash
+curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
+      sudo tee /etc/apt/trusted.gpg.d/ngrok.asc >/dev/null && \
+      echo "deb https://ngrok-agent.s3.amazonaws.com buster main" | \
+      sudo tee /etc/apt/sources.list.d/ngrok.list && \
+      sudo apt update && sudo apt install ngrok
+```
 ## compile:
 ```bash
 g++ server.cpp -o server & g++ client.cpp -lpthread -o client
