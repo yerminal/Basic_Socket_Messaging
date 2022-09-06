@@ -20,7 +20,7 @@ curl -s https://ngrok-agent.s3.amazonaws.com/ngrok.asc | \
 ```
 ## compile:
 ```bash
-g++ server.cpp -o server & g++ client.cpp -lpthread -o client
+g++ server.cpp -o server && g++ client.cpp -lpthread -o client
 ``` 
 ## run:
 ### server:
