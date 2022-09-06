@@ -3,6 +3,7 @@
 #include <string>
 #include <arpa/inet.h>
 #include <netinet/in.h>
+#include <netdb.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -15,7 +16,7 @@
 #include <chrono>
 #include <thread>
 
-#define SERVER_PORT 8080
+// #define SERVER_PORT 12396
 #define SIZE_BUFFER 256
 
 #define ERR_TIMEOUT 11
@@ -26,13 +27,27 @@ void copy_string_to_vector(std::string &input, std::vector<char> &target);
 void reset_char_vector(std::vector<char> &v);
 std::string copy_vector_to_string(std::vector<char> &v);
 void remove_zeros_string(std::string &str);
+void lookup_host(const char *host, char *hostaddrstr);
 
-int main(void)
+int main(int argc, char *argv[])
 {
+    if (argc != 3)
+    {
+        std::cerr << "\nUsage: " << argv[0] << " hostname port\n";
+        exit(EXIT_FAILURE);
+    }
+
     bool exit_system = 0;
+
+    char hostaddrstr[100];
 
     int client_fd, comm_fd;
     struct sockaddr_in server_address;
+
+    const std::string hostname = argv[1];
+    const std::string portstr = argv[2];
+
+    const int host_port = strtol(portstr.c_str(), NULL, 10);
 
     int len_client_address = sizeof(struct sockaddr_in),
         len_server_address = sizeof(struct sockaddr_in);
@@ -43,8 +58,11 @@ int main(void)
     std::string username;
 
     server_address.sin_family = AF_INET;
-    server_address.sin_port = htons(SERVER_PORT);
-    if (inet_pton(AF_INET, "127.0.0.1", &server_address.sin_addr) <= 0)
+    server_address.sin_port = htons(host_port);
+
+    lookup_host(hostname.c_str(), hostaddrstr);
+
+    if (inet_pton(AF_INET, hostaddrstr, &server_address.sin_addr) <= 0)
     {
         std::cerr << "Invalid address or the address is not supported.\n";
         exit(EXIT_FAILURE);
@@ -186,4 +204,48 @@ std::string copy_vector_to_string(std::vector<char> &v)
 void remove_zeros_string(std::string &str)
 {
     str.erase(std::remove(str.begin(), str.end(), '\0'), str.end());
+}
+
+void lookup_host(const char *hostname, char *hostaddrstr)
+{
+    int err;
+    struct addrinfo hints, *result;
+    void *ptr;
+
+    memset(&hints, 0, sizeof(hints));
+
+    hints.ai_family = AF_UNSPEC; /* Allow IPv4 or IPv6 */
+    hints.ai_socktype = SOCK_STREAM;
+    hints.ai_flags = AI_ALL;
+    hints.ai_protocol = IPPROTO_TCP; /* Any protocol */
+    hints.ai_canonname = NULL;
+    hints.ai_addr = NULL;
+    hints.ai_next = NULL;
+
+    if ((err = getaddrinfo(hostname, NULL, &hints, &result)) != 0)
+    {
+        std::cerr << "ERR: " << err << ". "
+                  << "getaddrinfo is failed.\n";
+        exit(EXIT_FAILURE);
+    }
+
+    while (result)
+    {
+        inet_ntop(result->ai_family, result->ai_addr->sa_data, hostaddrstr, 100);
+
+        switch (result->ai_family)
+        {
+        case AF_INET:
+            ptr = &((struct sockaddr_in *)result->ai_addr)->sin_addr;
+            break;
+        case AF_INET6:
+            ptr = &((struct sockaddr_in6 *)result->ai_addr)->sin6_addr;
+            break;
+        }
+        inet_ntop(result->ai_family, ptr, hostaddrstr, 100);
+        printf("IPv%d address: %s\n", result->ai_family == PF_INET6 ? 6 : 4,
+               hostaddrstr);
+        result = result->ai_next;
+    }
+    freeaddrinfo(result);
 }
