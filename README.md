@@ -43,7 +43,7 @@ kill $(lsof -t -i:8080)
 ngrok tcp 8080
 ```
 ### client:
-- Copy your ngrok address and port (example: **4.tcp.eu.ngrok.io** **12227**) (do not copy all the address tcp://4.tcp.eu.ngrok.io:12227)
+- Copy the ngrok address and port (example: **4.tcp.eu.ngrok.io** **12227**) (do not copy all the address tcp://4.tcp.eu.ngrok.io:12227)
 
 - Start client with the ngrok address and port
 ```bash
