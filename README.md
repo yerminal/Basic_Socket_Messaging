@@ -12,7 +12,7 @@ g++ --version
 ```
 ## compile:
 ```bash
-g++ server.cpp -o server & g++ client.cpp -lpthread -o client
+g++ server.cpp -o server && g++ client.cpp -lpthread -o client
 ```
 ## run:
 ### server:
