@@ -1,4 +1,5 @@
 # Basic_Socket_Messaging
+If you want to use ngrok, go to [ngrok branch](https://github.com/yerminal/Basic_Socket_Messaging/tree/ngrok).
 ## prerequisites
 If you have gcc/g++, skip to the compile step.
 - Install gcc/g++.
